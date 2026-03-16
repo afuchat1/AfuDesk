@@ -31,7 +31,6 @@ export default function Dashboard() {
         .eq("owner_id", user.id);
 
       const websiteIds = websites?.map((w) => w.id) ?? [];
-
       let totalChats = 0;
       let openChats = 0;
       let totalMessages = 0;
@@ -93,7 +92,7 @@ export default function Dashboard() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {statCards.map((stat) => (
-            <div key={stat.label} className="glass-card rounded-xl p-5">
+            <div key={stat.label} className="bg-card rounded-lg p-5">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                   <stat.icon className={`h-5 w-5 ${stat.color}`} />

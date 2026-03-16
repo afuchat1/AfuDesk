@@ -9,10 +9,10 @@
     --background: 225 25% 8%;
     --foreground: 210 20% 92%;
 
-    --card: 225 20% 12%;
+    --card: 225 22% 11%;
     --card-foreground: 210 20% 92%;
 
-    --popover: 225 20% 12%;
+    --popover: 225 22% 11%;
     --popover-foreground: 210 20% 92%;
 
     --primary: 24 95% 53%;
@@ -21,7 +21,7 @@
     --secondary: 225 18% 16%;
     --secondary-foreground: 210 20% 85%;
 
-    --muted: 225 15% 18%;
+    --muted: 225 15% 15%;
     --muted-foreground: 215 12% 55%;
 
     --accent: 24 95% 53%;
@@ -30,19 +30,19 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 225 15% 20%;
-    --input: 225 15% 20%;
+    --border: 225 10% 18%;
+    --input: 225 15% 18%;
     --ring: 24 95% 53%;
 
-    --radius: 0.625rem;
+    --radius: 0.5rem;
 
-    --sidebar-background: 225 22% 10%;
-    --sidebar-foreground: 210 20% 85%;
+    --sidebar-background: 225 22% 9%;
+    --sidebar-foreground: 210 20% 70%;
     --sidebar-primary: 24 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 18% 16%;
+    --sidebar-accent: 225 18% 14%;
     --sidebar-accent-foreground: 210 20% 92%;
-    --sidebar-border: 225 15% 18%;
+    --sidebar-border: 225 10% 16%;
     --sidebar-ring: 24 95% 53%;
 
     --success: 142 71% 45%;
@@ -64,14 +64,6 @@
 }
 
 @layer utilities {
-  .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50;
-  }
-
-  .glow-orange {
-    box-shadow: 0 0 20px hsl(24 95% 53% / 0.15), 0 0 60px hsl(24 95% 53% / 0.05);
-  }
-
   .gradient-text {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-[hsl(24,95%,53%)] to-[hsl(38,92%,50%)];
   }

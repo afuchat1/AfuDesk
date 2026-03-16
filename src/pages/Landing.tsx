@@ -7,6 +7,7 @@ import {
   Shield,
   ArrowRight,
   CheckCircle2,
+  Mail,
 } from "lucide-react";
 
 const features = [
@@ -43,12 +44,12 @@ const benefits = [
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Nav */}
-      <nav className="border-b border-border/50">
+      <nav className="bg-background">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary glow-orange">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
               <MessageSquare className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold text-foreground">AfuDesk</span>
@@ -69,7 +70,7 @@ export default function Landing() {
       {/* Hero */}
       <section className="container py-20 md:py-32 text-center">
         <div className="mx-auto max-w-3xl animate-fade-in">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-xs text-muted-foreground">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-muted px-4 py-1.5 text-xs text-muted-foreground">
             <Zap className="h-3 w-3 text-primary" />
             Live chat for modern websites
           </div>
@@ -96,9 +97,9 @@ export default function Landing() {
 
       {/* Features */}
       <section className="container pb-20">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
-            <div key={f.title} className="glass-card rounded-xl p-6 hover:border-primary/30 transition-colors">
+            <div key={f.title} className="p-1">
               <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                 <f.icon className="h-5 w-5 text-primary" />
               </div>
@@ -111,7 +112,7 @@ export default function Landing() {
 
       {/* Benefits */}
       <section className="container pb-20">
-        <div className="glass-card rounded-2xl p-8 md:p-12">
+        <div className="bg-muted rounded-xl p-8 md:p-12">
           <h2 className="text-2xl font-bold text-foreground mb-6 text-center">
             Everything you need
           </h2>
@@ -127,13 +128,39 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-8">
-        <div className="container flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-primary" />
-            AfuDesk
+      <footer className="mt-auto bg-muted py-10">
+        <div className="container">
+          <div className="grid gap-8 sm:grid-cols-3">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <MessageSquare className="h-5 w-5 text-primary" />
+                <span className="font-bold text-foreground">AfuDesk</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Multi-tenant live chat SaaS for modern websites. Engage visitors in real time.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-3 text-sm">Product</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link to="/auth" className="hover:text-primary transition-colors">Dashboard</Link></li>
+                <li><Link to="/auth" className="hover:text-primary transition-colors">Get Started</Link></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Documentation</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-3 text-sm">Contact</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <Mail className="h-3.5 w-3.5" />
+                  <a href="mailto:afuchatgroup@gmail.com" className="hover:text-primary transition-colors">afuchatgroup@gmail.com</a>
+                </li>
+              </ul>
+            </div>
           </div>
-          <p>© {new Date().getFullYear()} AfuDesk. All rights reserved.</p>
+          <div className="mt-8 pt-6 text-center text-xs text-muted-foreground" style={{ borderTop: '1px solid hsl(225 10% 18%)' }}>
+            © {new Date().getFullYear()} AfuDesk. All rights reserved. Managed by afuchatgroup@gmail.com
+          </div>
         </div>
       </footer>
     </div>
