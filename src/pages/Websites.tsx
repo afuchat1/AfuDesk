@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Globe, Copy, Trash2, Check } from "lucide-react";
+import { Plus, Globe, Copy, Trash2, Check, Code } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Website = Tables<"websites">;
@@ -28,6 +28,7 @@ export default function Websites() {
   const [domain, setDomain] = useState("");
   const [creating, setCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showSnippet, setShowSnippet] = useState<string | null>(null);
 
   const fetchWebsites = async () => {
     if (!user) return;
@@ -75,12 +76,15 @@ export default function Websites() {
     }
   };
 
+  const getSnippet = (siteId: string) => {
+    return `<script src="${window.location.origin}/widget.js?site_id=${siteId}" async></script>`;
+  };
+
   const copySnippet = (siteId: string) => {
-    const snippet = `<script src="${window.location.origin}/widget.js?site_id=${siteId}" async></script>`;
-    navigator.clipboard.writeText(snippet);
+    navigator.clipboard.writeText(getSnippet(siteId));
     setCopiedId(siteId);
     setTimeout(() => setCopiedId(null), 2000);
-    toast({ title: "Snippet copied!" });
+    toast({ title: "Snippet copied to clipboard!" });
   };
 
   return (
@@ -133,48 +137,66 @@ export default function Websites() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="glass-card rounded-xl p-5 h-20 animate-pulse" />
+              <div key={i} className="bg-card rounded-lg p-5 h-20 animate-pulse" />
             ))}
           </div>
         ) : websites.length === 0 ? (
-          <div className="glass-card rounded-xl p-12 text-center">
+          <div className="bg-card rounded-lg p-12 text-center">
             <Globe className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-1">No websites yet</h3>
             <p className="text-sm text-muted-foreground">Add your first website to start receiving chats.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {websites.map((site) => (
-              <div key={site.id} className="glass-card rounded-xl p-5 flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted shrink-0">
-                  <Globe className="h-5 w-5 text-primary" />
+              <div key={site.id}>
+                <div className="bg-card rounded-lg p-4 flex items-center gap-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted shrink-0">
+                    <Globe className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground text-sm truncate">{site.name}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{site.domain}</p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSnippet(showSnippet === site.id ? null : site.id)}
+                    >
+                      <Code className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copySnippet(site.id)}
+                    >
+                      {copiedId === site.id ? (
+                        <Check className="h-3.5 w-3.5 text-success" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(site.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground truncate">{site.name}</h3>
-                  <p className="text-xs text-muted-foreground truncate">{site.domain}</p>
-                </div>
-                <div className="flex gap-2 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copySnippet(site.id)}
-                  >
-                    {copiedId === site.id ? (
-                      <Check className="h-3.5 w-3.5" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5" />
-                    )}
-                    <span className="ml-1.5 hidden sm:inline">Snippet</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(site.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+                {showSnippet === site.id && (
+                  <div className="bg-muted rounded-lg mt-1 p-4">
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Paste this before the closing <code className="text-primary">&lt;/body&gt;</code> tag:
+                    </p>
+                    <code className="block text-xs text-foreground font-mono break-all select-all">
+                      {getSnippet(site.id)}
+                    </code>
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -9,9 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   MessageSquare,
   Send,
-  X,
   Search,
-  User,
   Mail,
   MapPin,
   ArrowLeft,
@@ -39,10 +37,8 @@ export default function Chats() {
     fetchChats();
   }, [user]);
 
-  // Real-time subscription for new messages
   useEffect(() => {
     if (!selectedChat) return;
-
     const channel = supabase
       .channel(`messages-${selectedChat.id}`)
       .on(
@@ -58,30 +54,18 @@ export default function Chats() {
         }
       )
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [selectedChat?.id]);
 
-  // Real-time subscription for new chats
   useEffect(() => {
     if (!user) return;
-
     const channel = supabase
       .channel("chats-realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "chats" },
-        () => {
-          fetchChats();
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "chats" }, () => {
+        fetchChats();
+      })
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   useEffect(() => {
@@ -169,7 +153,7 @@ export default function Chats() {
 
   return (
     <DashboardLayout>
-      <div className="animate-fade-in h-[calc(100vh-7rem)] md:h-[calc(100vh-5rem)] flex flex-col">
+      <div className="animate-fade-in h-[calc(100vh-6.5rem)] md:h-[calc(100vh-4.5rem)] flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Chats</h1>
@@ -177,14 +161,14 @@ export default function Chats() {
           </div>
         </div>
 
-        <div className="flex-1 flex gap-4 overflow-hidden min-h-0">
+        <div className="flex-1 flex gap-3 overflow-hidden min-h-0">
           {/* Chat list */}
           <div
-            className={`w-full md:w-80 shrink-0 flex flex-col glass-card rounded-xl overflow-hidden ${
+            className={`w-full md:w-72 shrink-0 flex flex-col bg-card rounded-lg overflow-hidden ${
               selectedChat ? "hidden md:flex" : "flex"
             }`}
           >
-            <div className="p-3 border-b border-border space-y-2">
+            <div className="p-3 space-y-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -199,7 +183,7 @@ export default function Chats() {
                   <button
                     key={s}
                     onClick={() => setFilterStatus(s)}
-                    className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                       filterStatus === s
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-muted"
@@ -213,9 +197,9 @@ export default function Chats() {
 
             <div className="flex-1 overflow-auto">
               {loading ? (
-                <div className="p-4 space-y-3">
+                <div className="p-3 space-y-2">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />
+                    <div key={i} className="h-14 rounded bg-muted animate-pulse" />
                   ))}
                 </div>
               ) : filteredChats.length === 0 ? (
@@ -227,7 +211,7 @@ export default function Chats() {
                   <button
                     key={chat.id}
                     onClick={() => selectChat(chat)}
-                    className={`w-full text-left px-4 py-3 border-b border-border/50 hover:bg-muted/50 transition-colors ${
+                    className={`w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors ${
                       selectedChat?.id === chat.id ? "bg-muted/50" : ""
                     }`}
                   >
@@ -256,13 +240,13 @@ export default function Chats() {
 
           {/* Chat messages */}
           <div
-            className={`flex-1 flex flex-col glass-card rounded-xl overflow-hidden ${
+            className={`flex-1 flex flex-col bg-card rounded-lg overflow-hidden ${
               selectedChat ? "flex" : "hidden md:flex"
             }`}
           >
             {selectedChat ? (
               <>
-                <div className="flex items-center gap-3 p-4 border-b border-border">
+                <div className="flex items-center gap-3 p-4">
                   <button
                     className="md:hidden text-muted-foreground"
                     onClick={() => setSelectedChat(null)}
@@ -270,7 +254,7 @@ export default function Chats() {
                     <ArrowLeft className="h-5 w-5" />
                   </button>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">
+                    <h3 className="font-semibold text-foreground text-sm truncate">
                       {selectedChat.visitor_name || "Anonymous"}
                     </h3>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -290,12 +274,13 @@ export default function Chats() {
                     variant="outline"
                     size="sm"
                     onClick={() => toggleStatus(selectedChat)}
+                    className="text-xs"
                   >
                     {selectedChat.status === "open" ? "Close" : "Reopen"}
                   </Button>
                 </div>
 
-                <div className="flex-1 overflow-auto p-4 space-y-3">
+                <div className="flex-1 overflow-auto px-4 pb-4 space-y-2">
                   {messages.map((msg) => (
                     <div
                       key={msg.id}
@@ -325,7 +310,7 @@ export default function Chats() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                <form onSubmit={sendMessage} className="p-3 border-t border-border flex gap-2">
+                <form onSubmit={sendMessage} className="p-3 flex gap-2">
                   <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}

@@ -59,9 +59,9 @@ export default function DashboardSettings() {
         <p className="text-sm text-muted-foreground mb-6">Manage your profile</p>
 
         {loading ? (
-          <div className="glass-card rounded-xl p-6 h-48 animate-pulse" />
+          <div className="bg-card rounded-lg p-6 h-48 animate-pulse" />
         ) : (
-          <form onSubmit={handleSave} className="glass-card rounded-xl p-6 space-y-4">
+          <form onSubmit={handleSave} className="bg-card rounded-lg p-6 space-y-4">
             <div className="space-y-2">
               <Label>Email</Label>
               <Input value={user?.email ?? ""} disabled />

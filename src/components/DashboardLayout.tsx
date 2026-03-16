@@ -10,7 +10,6 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 const navItems = [
@@ -33,7 +32,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex h-screen bg-background">
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
@@ -41,13 +39,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         />
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-sidebar transition-transform md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-60 flex-col bg-sidebar transition-transform md:static md:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-6">
+        <div className="flex h-14 items-center gap-2 px-5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <MessageSquare className="h-4 w-4 text-primary-foreground" />
           </div>
@@ -60,7 +57,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 p-3">
+        <nav className="flex-1 space-y-0.5 px-3 pt-2">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -68,7 +65,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 key={item.path}
                 to={item.path}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-sidebar-accent text-primary"
                     : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -81,20 +78,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        <div className="border-t border-sidebar-border p-3">
-          <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+        <div className="p-3">
+          <div className="flex items-center gap-3 px-3 py-2 text-sm text-sidebar-foreground">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
               {user?.email?.[0]?.toUpperCase() ?? "?"}
             </div>
-            <div className="flex-1 truncate">
-              <p className="truncate text-sm font-medium text-sidebar-accent-foreground">
-                {user?.email}
-              </p>
-            </div>
+            <span className="flex-1 truncate text-xs text-sidebar-foreground">
+              {user?.email}
+            </span>
           </div>
           <button
             onClick={handleSignOut}
-            className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-destructive transition-colors"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-destructive transition-colors"
           >
             <LogOut className="h-4 w-4" />
             Sign Out
@@ -102,9 +97,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="flex h-16 items-center gap-4 border-b border-border px-6 md:hidden">
+        <header className="flex h-14 items-center gap-4 px-4 md:hidden">
           <button onClick={() => setMobileOpen(true)}>
             <Menu className="h-5 w-5 text-foreground" />
           </button>
@@ -115,7 +109,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <span className="font-bold text-foreground">AfuDesk</span>
           </div>
         </header>
-        <div className="flex-1 overflow-auto p-6">{children}</div>
+        <div className="flex-1 overflow-auto p-5">{children}</div>
       </main>
     </div>
   );
