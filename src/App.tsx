@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Websites from "./pages/Websites";
 import Chats from "./pages/Chats";
 import DashboardSettings from "./pages/DashboardSettings";
+import Demo from "./pages/Demo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
