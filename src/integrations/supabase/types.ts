@@ -14,7 +14,151 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chats: {
+        Row: {
+          closed_at: string | null
+          id: string
+          started_at: string
+          status: string
+          updated_at: string
+          visitor_email: string | null
+          visitor_ip: string | null
+          visitor_location: string | null
+          visitor_name: string | null
+          website_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          visitor_email?: string | null
+          visitor_ip?: string | null
+          visitor_location?: string | null
+          visitor_name?: string | null
+          website_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          visitor_email?: string | null
+          visitor_ip?: string | null
+          visitor_location?: string | null
+          visitor_name?: string | null
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chats_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          chat_id: string
+          content: string
+          created_at: string
+          id: string
+          sender: string
+        }
+        Insert: {
+          chat_id: string
+          content: string
+          created_at?: string
+          id?: string
+          sender: string
+        }
+        Update: {
+          chat_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          sender?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          company_name: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          company_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          company_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      websites: {
+        Row: {
+          created_at: string
+          domain: string
+          id: string
+          is_online: boolean | null
+          name: string
+          owner_id: string
+          updated_at: string
+          widget_color: string | null
+          widget_greeting: string | null
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          id?: string
+          is_online?: boolean | null
+          name: string
+          owner_id: string
+          updated_at?: string
+          widget_color?: string | null
+          widget_greeting?: string | null
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          id?: string
+          is_online?: boolean | null
+          name?: string
+          owner_id?: string
+          updated_at?: string
+          widget_color?: string | null
+          widget_greeting?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
