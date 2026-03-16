@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Websites from "./pages/Websites";
 import Chats from "./pages/Chats";
 import DashboardSettings from "./pages/DashboardSettings";
+import Demo from "./pages/Demo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/demo" element={<Demo />} />
             <Route path="/auth" element={<Auth />} />
             <Route
               path="/dashboard"
