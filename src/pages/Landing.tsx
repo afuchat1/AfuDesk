@@ -89,7 +89,7 @@ export default function Landing() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link to="/auth">View Demo</Link>
+              <Link to="/demo">View Demo</Link>
             </Button>
           </div>
         </div>
