@@ -77,6 +77,9 @@ export default function Websites() {
   };
 
   const getSnippet = (siteId: string) => {
+    const baseUrl = import.meta.env.VITE_SUPABASE_URL
+      ? `${import.meta.env.VITE_SUPABASE_URL.replace('//', '//').split('.supabase.co')[0]}.lovableproject.com`
+      : window.location.origin;
     return `<script src="${window.location.origin}/widget.js?site_id=${siteId}" async></script>`;
   };
 
