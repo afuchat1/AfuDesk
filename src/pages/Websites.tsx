@@ -13,12 +13,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Globe, Copy, Trash2, Check, Code, ExternalLink } from "lucide-react";
+import { Plus, Globe, Copy, Trash2, Check, Code } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Website = Tables<"websites">;
-
-const WIDGET_BASE_URL = "https://6c32458b-80e0-4bbd-b548-049e7cbd9810.lovableproject.com";
 
 export default function Websites() {
   const { user } = useAuth();
@@ -73,13 +71,16 @@ export default function Websites() {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      setWebsites((prev) => prev.filter((website) => website.id !== id));
+      setWebsites((prev) => prev.filter((w) => w.id !== id));
       toast({ title: "Website removed" });
     }
   };
 
   const getSnippet = (siteId: string) => {
-    return `<script src="${WIDGET_BASE_URL}/widget.js?site_id=${siteId}" async></script>`;
+    const baseUrl = import.meta.env.VITE_SUPABASE_URL
+      ? `${import.meta.env.VITE_SUPABASE_URL.replace('//', '//').split('.supabase.co')[0]}.lovableproject.com`
+      : window.location.origin;
+    return `<script src="${window.location.origin}/widget.js?site_id=${siteId}" async></script>`;
   };
 
   const copySnippet = (siteId: string) => {
@@ -92,15 +93,15 @@ export default function Websites() {
   return (
     <DashboardLayout>
       <div className="animate-fade-in">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Websites</h1>
-            <p className="text-sm text-muted-foreground">Manage connected websites and grab the widget embed code.</p>
+            <p className="text-sm text-muted-foreground">Manage your connected websites</p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="mr-2 h-4 w-4" /> Add Website
+                <Plus className="h-4 w-4 mr-2" /> Add Website
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -110,11 +111,23 @@ export default function Websites() {
               <form onSubmit={handleCreate} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="siteName">Website Name</Label>
-                  <Input id="siteName" value={name} onChange={(e) => setName(e.target.value)} placeholder="My Website" required />
+                  <Input
+                    id="siteName"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="My Website"
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="siteDomain">Domain</Label>
-                  <Input id="siteDomain" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="example.com" required />
+                  <Input
+                    id="siteDomain"
+                    value={domain}
+                    onChange={(e) => setDomain(e.target.value)}
+                    placeholder="example.com"
+                    required
+                  />
                 </div>
                 <Button type="submit" className="w-full" disabled={creating}>
                   {creating ? "Creating..." : "Add Website"}
@@ -126,42 +139,46 @@ export default function Websites() {
 
         {loading ? (
           <div className="space-y-3">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="h-24 animate-pulse rounded-[1.5rem] bg-card" />
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-card rounded-lg p-5 h-20 animate-pulse" />
             ))}
           </div>
         ) : websites.length === 0 ? (
-          <div className="rounded-[2rem] bg-card p-12 text-center">
-            <Globe className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-1 text-lg font-semibold text-foreground">No websites yet</h3>
-            <p className="text-sm text-muted-foreground">Add your first website to start receiving chats and tickets.</p>
+          <div className="bg-card rounded-lg p-12 text-center">
+            <Globe className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-1">No websites yet</h3>
+            <p className="text-sm text-muted-foreground">Add your first website to start receiving chats.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {websites.map((site) => (
-              <div key={site.id} className="rounded-[1.75rem] bg-card p-4">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center">
-                  <div className="flex min-w-0 flex-1 items-center gap-4">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-muted shrink-0">
-                      <Globe className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="truncate text-base font-semibold text-foreground">{site.name}</h3>
-                      <p className="truncate text-sm text-muted-foreground">{site.domain}</p>
-                    </div>
+              <div key={site.id}>
+                <div className="bg-card rounded-lg p-4 flex items-center gap-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted shrink-0">
+                    <Globe className="h-4 w-4 text-primary" />
                   </div>
-
-                  <div className="flex flex-wrap gap-2 md:justify-end">
-                    <Button variant="ghost" size="sm" onClick={() => setShowSnippet(showSnippet === site.id ? null : site.id)}>
-                      <Code className="h-4 w-4" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground text-sm truncate">{site.name}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{site.domain}</p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSnippet(showSnippet === site.id ? null : site.id)}
+                    >
+                      <Code className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => copySnippet(site.id)}>
-                      {copiedId === site.id ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
-                    </Button>
-                    <Button variant="ghost" size="sm" asChild>
-                      <a href={`/demo?site_id=${site.id}`} target="_blank" rel="noreferrer">
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copySnippet(site.id)}
+                    >
+                      {copiedId === site.id ? (
+                        <Check className="h-3.5 w-3.5 text-success" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
                     </Button>
                     <Button
                       variant="ghost"
@@ -169,22 +186,20 @@ export default function Websites() {
                       onClick={() => handleDelete(site.id)}
                       className="text-destructive hover:text-destructive"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </div>
-
-                {showSnippet === site.id ? (
-                  <div className="mt-4 rounded-[1.25rem] bg-muted p-4">
-                    <p className="mb-2 text-xs text-muted-foreground">
+                {showSnippet === site.id && (
+                  <div className="bg-muted rounded-lg mt-1 p-4">
+                    <p className="text-xs text-muted-foreground mb-2">
                       Paste this before the closing <code className="text-primary">&lt;/body&gt;</code> tag:
                     </p>
-                    <code className="block break-all font-mono text-xs text-foreground select-all">{getSnippet(site.id)}</code>
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      The demo support center is also available at <span className="text-foreground">/demo?site_id={site.id}</span>
-                    </p>
+                    <code className="block text-xs text-foreground font-mono break-all select-all">
+                      {getSnippet(site.id)}
+                    </code>
                   </div>
-                ) : null}
+                )}
               </div>
             ))}
           </div>
