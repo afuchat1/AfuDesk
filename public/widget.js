@@ -493,7 +493,7 @@
     // Footer
     var footer = document.createElement('div');
     footer.style.cssText = 'padding:8px;text-align:center;background:#fafafa;border-top:1px solid #f0f0f0;';
-    footer.innerHTML = '<span style="color:#bbb;font-size:10.5px;">Powered by <a href="#" style="color:' + COLOR + ';text-decoration:none;font-weight:700;">AfuDesk</a></span>';
+    footer.innerHTML = '<span style="color:#bbb;font-size:10.5px;">Powered by <a href="https://support.afuchat.com" target="_blank" rel="noopener" style="color:' + COLOR + ';text-decoration:none;font-weight:700;">AfuDesk</a></span>';
 
     // Assemble window
     win.appendChild(header);
