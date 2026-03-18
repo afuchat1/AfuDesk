@@ -85,8 +85,15 @@
 
   function sendMessage(content) {
     if (!chatId || !content.trim()) return;
-    supabasePost('messages', { chat_id: chatId, sender: 'visitor', content: content.trim() });
-    appendMessage(content.trim(), 'visitor');
+    var trimmed = content.trim();
+    supabasePost('messages', { chat_id: chatId, sender: 'visitor', content: trimmed });
+    appendMessage(trimmed, 'visitor');
+    // Trigger email notification to website owner
+    fetch(SUPABASE_URL + '/functions/v1/notify-new-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ chat_id: chatId, message_content: trimmed, visitor_name: visitorName })
+    }).catch(function() {});
   }
 
   function subscribeRealtime() {
