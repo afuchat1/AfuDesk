@@ -85,8 +85,15 @@
 
   function sendMessage(content) {
     if (!chatId || !content.trim()) return;
-    supabasePost('messages', { chat_id: chatId, sender: 'visitor', content: content.trim() });
-    appendMessage(content.trim(), 'visitor');
+    var trimmed = content.trim();
+    supabasePost('messages', { chat_id: chatId, sender: 'visitor', content: trimmed });
+    appendMessage(trimmed, 'visitor');
+    // Trigger email notification to website owner
+    fetch(SUPABASE_URL + '/functions/v1/notify-new-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ chat_id: chatId, message_content: trimmed, visitor_name: visitorName })
+    }).catch(function() {});
   }
 
   function subscribeRealtime() {
@@ -493,7 +500,7 @@
     // Footer
     var footer = document.createElement('div');
     footer.style.cssText = 'padding:8px;text-align:center;background:#fafafa;border-top:1px solid #f0f0f0;';
-    footer.innerHTML = '<span style="color:#bbb;font-size:10.5px;">Powered by <a href="#" style="color:' + COLOR + ';text-decoration:none;font-weight:700;">AfuDesk</a></span>';
+    footer.innerHTML = '<span style="color:#bbb;font-size:10.5px;">Powered by <a href="https://support.afuchat.com" target="_blank" rel="noopener" style="color:' + COLOR + ';text-decoration:none;font-weight:700;">AfuDesk</a></span>';
 
     // Assemble window
     win.appendChild(header);
