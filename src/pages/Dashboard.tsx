@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Globe, MessageSquare, MessageCircle, Clock } from "lucide-react";
+import { Globe, MessageSquare, MessageCircle, Clock, TrendingUp } from "lucide-react";
 
 interface Stats {
   totalWebsites: number;
@@ -78,32 +78,31 @@ export default function Dashboard() {
   }, [user]);
 
   const statCards = [
-    { icon: Globe, label: "Websites", value: stats.totalWebsites, color: "text-primary" },
-    { icon: MessageSquare, label: "Total Chats", value: stats.totalChats, color: "text-primary" },
-    { icon: Clock, label: "Open Chats", value: stats.openChats, color: "text-success" },
-    { icon: MessageCircle, label: "Messages", value: stats.totalMessages, color: "text-warning" },
+    { icon: Globe, label: "Websites", value: stats.totalWebsites, accent: "bg-primary/10 text-primary" },
+    { icon: MessageSquare, label: "Total Chats", value: stats.totalChats, accent: "bg-primary/10 text-primary" },
+    { icon: Clock, label: "Open Chats", value: stats.openChats, accent: "bg-success/10 text-success" },
+    { icon: MessageCircle, label: "Messages", value: stats.totalMessages, accent: "bg-warning/10 text-warning" },
   ];
 
   return (
     <DashboardLayout>
       <div className="animate-fade-in">
-        <h1 className="text-2xl font-bold text-foreground mb-1">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mb-6">Overview of your AfuDesk activity</p>
+        <div className="flex items-center gap-2 mb-1">
+          <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
+          <TrendingUp className="h-4 w-4 text-primary" />
+        </div>
+        <p className="text-muted-foreground text-xs mb-5">Overview of your AfuDesk activity</p>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
           {statCards.map((stat) => (
-            <div key={stat.label} className="bg-card rounded-lg p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {loading ? "—" : stat.value}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                </div>
+            <div key={stat.label} className="bg-card rounded-xl p-4">
+              <div className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${stat.accent} mb-3`}>
+                <stat.icon className="h-4 w-4" />
               </div>
+              <p className="text-2xl font-bold text-foreground">
+                {loading ? "—" : stat.value}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{stat.label}</p>
             </div>
           ))}
         </div>
