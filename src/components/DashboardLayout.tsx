@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   MessageSquare,
   Globe,
@@ -23,6 +24,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { signOut, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleSignOut = async () => {
@@ -30,31 +32,64 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     navigate("/");
   };
 
+  // Mobile layout with bottom nav
+  if (isMobile) {
+    return (
+      <div className="flex flex-col h-screen bg-background">
+        {/* Top bar */}
+        <header className="flex h-12 items-center gap-3 px-4 bg-card shrink-0">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
+            <MessageSquare className="h-3.5 w-3.5 text-primary-foreground" />
+          </div>
+          <span className="font-bold text-foreground text-sm">AfuDesk</span>
+          <div className="ml-auto">
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="flex-1 overflow-auto p-4">{children}</main>
+
+        {/* Bottom nav */}
+        <nav className="shrink-0 bg-card border-t border-border">
+          <div className="flex items-center justify-around h-14">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors ${
+                    isActive
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <item.icon className={`h-5 w-5 ${isActive ? "text-primary" : ""}`} />
+                  <span className="text-[10px] font-medium">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
+    );
+  }
+
+  // Desktop layout with sidebar
   return (
     <div className="flex h-screen bg-background">
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-60 flex-col bg-sidebar transition-transform md:static md:translate-x-0 ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
+      <aside className="flex w-60 flex-col bg-sidebar shrink-0">
         <div className="flex h-14 items-center gap-2 px-5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <MessageSquare className="h-4 w-4 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold text-sidebar-accent-foreground">AfuDesk</span>
-          <button
-            className="ml-auto md:hidden text-sidebar-foreground"
-            onClick={() => setMobileOpen(false)}
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
 
         <nav className="flex-1 space-y-0.5 px-3 pt-2">
@@ -64,7 +99,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               <Link
                 key={item.path}
                 to={item.path}
-                onClick={() => setMobileOpen(false)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-sidebar-accent text-primary"
@@ -98,17 +132,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       </aside>
 
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="flex h-14 items-center gap-4 px-4 md:hidden">
-          <button onClick={() => setMobileOpen(true)}>
-            <Menu className="h-5 w-5 text-foreground" />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-              <MessageSquare className="h-3.5 w-3.5 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-foreground">AfuDesk</span>
-          </div>
-        </header>
         <div className="flex-1 overflow-auto p-5">{children}</div>
       </main>
     </div>
