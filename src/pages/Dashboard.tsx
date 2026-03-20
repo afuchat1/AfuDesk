@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Globe, MessageSquare, MessageCircle, Clock, TrendingUp } from "lucide-react";
+import { Globe, MessageSquare, MessageCircle, Clock, Activity } from "lucide-react";
 
 interface Stats {
   totalWebsites: number;
@@ -13,96 +13,67 @@ interface Stats {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<Stats>({
-    totalWebsites: 0,
-    totalChats: 0,
-    openChats: 0,
-    totalMessages: 0,
-  });
+  const [stats, setStats] = useState<Stats>({ totalWebsites: 0, totalChats: 0, openChats: 0, totalMessages: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
-
     const fetchStats = async () => {
-      const { data: websites } = await supabase
-        .from("websites")
-        .select("id")
-        .eq("owner_id", user.id);
-
+      const { data: websites } = await supabase.from("websites").select("id").eq("owner_id", user.id);
       const websiteIds = websites?.map((w) => w.id) ?? [];
-      let totalChats = 0;
-      let openChats = 0;
-      let totalMessages = 0;
-
+      let totalChats = 0, openChats = 0, totalMessages = 0;
       if (websiteIds.length > 0) {
-        const { count: chatCount } = await supabase
-          .from("chats")
-          .select("*", { count: "exact", head: true })
-          .in("website_id", websiteIds);
-
-        const { count: openCount } = await supabase
-          .from("chats")
-          .select("*", { count: "exact", head: true })
-          .in("website_id", websiteIds)
-          .eq("status", "open");
-
-        const { data: chats } = await supabase
-          .from("chats")
-          .select("id")
-          .in("website_id", websiteIds);
-
+        const { count: chatCount } = await supabase.from("chats").select("*", { count: "exact", head: true }).in("website_id", websiteIds);
+        const { count: openCount } = await supabase.from("chats").select("*", { count: "exact", head: true }).in("website_id", websiteIds).eq("status", "open");
+        const { data: chats } = await supabase.from("chats").select("id").in("website_id", websiteIds);
         if (chats && chats.length > 0) {
           const chatIds = chats.map((c) => c.id);
-          const { count: msgCount } = await supabase
-            .from("messages")
-            .select("*", { count: "exact", head: true })
-            .in("chat_id", chatIds);
+          const { count: msgCount } = await supabase.from("messages").select("*", { count: "exact", head: true }).in("chat_id", chatIds);
           totalMessages = msgCount ?? 0;
         }
-
         totalChats = chatCount ?? 0;
         openChats = openCount ?? 0;
       }
-
-      setStats({
-        totalWebsites: websites?.length ?? 0,
-        totalChats,
-        openChats,
-        totalMessages,
-      });
+      setStats({ totalWebsites: websites?.length ?? 0, totalChats, openChats, totalMessages });
       setLoading(false);
     };
-
     fetchStats();
   }, [user]);
 
-  const statCards = [
-    { icon: Globe, label: "Websites", value: stats.totalWebsites, accent: "bg-primary/10 text-primary" },
-    { icon: MessageSquare, label: "Total Chats", value: stats.totalChats, accent: "bg-primary/10 text-primary" },
-    { icon: Clock, label: "Open Chats", value: stats.openChats, accent: "bg-success/10 text-success" },
-    { icon: MessageCircle, label: "Messages", value: stats.totalMessages, accent: "bg-warning/10 text-warning" },
+  const cards = [
+    { icon: Globe, label: "Websites", value: stats.totalWebsites, color: "text-primary", bg: "bg-primary/10" },
+    { icon: MessageSquare, label: "Total Chats", value: stats.totalChats, color: "text-primary", bg: "bg-primary/10" },
+    { icon: Clock, label: "Open Now", value: stats.openChats, color: "text-success", bg: "bg-success/10" },
+    { icon: MessageCircle, label: "Messages", value: stats.totalMessages, color: "text-warning", bg: "bg-warning/10" },
   ];
 
   return (
     <DashboardLayout>
       <div className="animate-fade-in">
-        <div className="flex items-center gap-2 mb-1">
-          <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
-          <TrendingUp className="h-4 w-4 text-primary" />
+        <div className="flex items-center gap-3 mb-6">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Activity className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-foreground">Dashboard</h1>
+            <p className="text-[11px] text-muted-foreground">Your AfuDesk overview</p>
+          </div>
         </div>
-        <p className="text-muted-foreground text-xs mb-5">Overview of your AfuDesk activity</p>
 
         <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-          {statCards.map((stat) => (
-            <div key={stat.label} className="bg-card rounded-xl p-4">
-              <div className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${stat.accent} mb-3`}>
-                <stat.icon className="h-4 w-4" />
+          {cards.map((c) => (
+            <div key={c.label} className="bg-secondary/30 rounded-xl p-5 transition-colors hover:bg-secondary/50 group cursor-default">
+              <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${c.bg} mb-4 transition-transform group-hover:scale-95`}>
+                <c.icon className={`h-5 w-5 ${c.color}`} />
               </div>
-              <p className="text-2xl font-bold text-foreground">
-                {loading ? "—" : stat.value}
+              <p className="text-3xl font-bold text-foreground tabular-nums">
+                {loading ? (
+                  <span className="inline-block h-8 w-12 bg-muted rounded animate-pulse" />
+                ) : (
+                  c.value.toLocaleString()
+                )}
               </p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">{stat.label}</p>
+              <p className="text-[11px] text-muted-foreground mt-1 font-medium">{c.label}</p>
             </div>
           ))}
         </div>
