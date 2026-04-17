@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { api } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -21,9 +21,10 @@ import {
   MoreVertical,
   User,
 } from "lucide-react";
-import type { Chat as BaseChat, Message } from "@/lib/types";
+import type { Tables } from "@/integrations/supabase/types";
 
-type Chat = BaseChat & { website_name?: string; last_message?: string };
+type Chat = Tables<"chats"> & { website_name?: string; last_message?: string };
+type Message = Tables<"messages">;
 
 export default function Chats() {
   const { user } = useAuth();
@@ -44,18 +45,22 @@ export default function Chats() {
 
   useEffect(() => {
     if (!selectedChat) return;
-    const interval = window.setInterval(() => {
-      api.getMessages(selectedChat.id).then(setMessages).catch(() => {});
-    }, 3000);
-    return () => window.clearInterval(interval);
+    const channel = supabase
+      .channel(`messages-${selectedChat.id}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `chat_id=eq.${selectedChat.id}` },
+        (payload) => setMessages((prev) => [...prev, payload.new as Message])
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [selectedChat?.id]);
 
   useEffect(() => {
     if (!user) return;
-    const interval = window.setInterval(() => {
-      fetchChats().catch(() => {});
-    }, 5000);
-    return () => window.clearInterval(interval);
+    const channel = supabase
+      .channel("chats-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "chats" }, () => fetchChats())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   useEffect(() => {
@@ -64,15 +69,27 @@ export default function Chats() {
 
   const fetchChats = async () => {
     if (!user) return;
-    const data = await api.getChats();
-    setChats(data);
+    const { data: websites } = await supabase.from("websites").select("id, name").eq("owner_id", user.id);
+    if (!websites || websites.length === 0) { setChats([]); setLoading(false); return; }
+    const websiteMap = Object.fromEntries(websites.map((w) => [w.id, w.name]));
+    const websiteIds = websites.map((w) => w.id);
+    const { data: chatsData } = await supabase.from("chats").select("*").in("website_id", websiteIds).order("updated_at", { ascending: false });
+    
+    // Fetch last message for each chat
+    const enriched = await Promise.all(
+      (chatsData ?? []).map(async (c) => {
+        const { data: msgs } = await supabase.from("messages").select("content, sender").eq("chat_id", c.id).order("created_at", { ascending: false }).limit(1);
+        return { ...c, website_name: websiteMap[c.website_id] ?? "Unknown", last_message: msgs?.[0]?.content ?? "" };
+      })
+    );
+    setChats(enriched);
     setLoading(false);
   };
 
   const selectChat = async (chat: Chat) => {
     setSelectedChat(chat);
-    const data = await api.getMessages(chat.id);
-    setMessages(data);
+    const { data } = await supabase.from("messages").select("*").eq("chat_id", chat.id).order("created_at", { ascending: true });
+    setMessages(data ?? []);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -80,22 +97,16 @@ export default function Chats() {
     e.preventDefault();
     if (!selectedChat || !newMessage.trim()) return;
     setSending(true);
-    try {
-      const message = await api.sendAgentMessage(selectedChat.id, newMessage.trim());
-      setMessages((prev) => [...prev, message]);
-      setNewMessage("");
-      fetchChats();
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally {
-      setSending(false);
-    }
+    const { error } = await supabase.from("messages").insert({ chat_id: selectedChat.id, sender: "agent", content: newMessage.trim() });
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    setNewMessage("");
+    setSending(false);
   };
 
   const toggleStatus = async (chat: Chat) => {
     const newStatus = chat.status === "open" ? "closed" : "open";
-    const updated = await api.updateChatStatus(chat.id, newStatus);
-    setSelectedChat((prev) => (prev ? { ...prev, ...updated } : null));
+    await supabase.from("chats").update({ status: newStatus, closed_at: newStatus === "closed" ? new Date().toISOString() : null }).eq("id", chat.id);
+    setSelectedChat((prev) => (prev ? { ...prev, status: newStatus } : null));
     fetchChats();
   };
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Globe, MessageSquare, MessageCircle, Clock, Activity } from "lucide-react";
@@ -19,11 +19,25 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) return;
     const fetchStats = async () => {
-      const data = await api.getStats();
-      setStats(data);
+      const { data: websites } = await supabase.from("websites").select("id").eq("owner_id", user.id);
+      const websiteIds = websites?.map((w) => w.id) ?? [];
+      let totalChats = 0, openChats = 0, totalMessages = 0;
+      if (websiteIds.length > 0) {
+        const { count: chatCount } = await supabase.from("chats").select("*", { count: "exact", head: true }).in("website_id", websiteIds);
+        const { count: openCount } = await supabase.from("chats").select("*", { count: "exact", head: true }).in("website_id", websiteIds).eq("status", "open");
+        const { data: chats } = await supabase.from("chats").select("id").in("website_id", websiteIds);
+        if (chats && chats.length > 0) {
+          const chatIds = chats.map((c) => c.id);
+          const { count: msgCount } = await supabase.from("messages").select("*", { count: "exact", head: true }).in("chat_id", chatIds);
+          totalMessages = msgCount ?? 0;
+        }
+        totalChats = chatCount ?? 0;
+        openChats = openCount ?? 0;
+      }
+      setStats({ totalWebsites: websites?.length ?? 0, totalChats, openChats, totalMessages });
       setLoading(false);
     };
-    fetchStats().catch(() => setLoading(false));
+    fetchStats();
   }, [user]);
 
   const cards = [

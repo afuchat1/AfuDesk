@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -18,27 +18,38 @@ export default function DashboardSettings() {
 
   useEffect(() => {
     if (!user) return;
-    api.getProfile().then((data) => {
-      if (data) {
-        setDisplayName(data.display_name ?? "");
-        setCompanyName(data.company_name ?? "");
-      }
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setDisplayName(data.display_name ?? "");
+          setCompanyName(data.company_name ?? "");
+        }
+        setLoading(false);
+      });
   }, [user]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
-    try {
-      await api.updateProfile({ display_name: displayName.trim(), company_name: companyName.trim() });
-      toast({ title: "Settings saved!" });
-    } catch (error: any) {
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        display_name: displayName.trim(),
+        company_name: companyName.trim(),
+      })
+      .eq("user_id", user.id);
+
+    if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally {
-      setSaving(false);
+    } else {
+      toast({ title: "Settings saved!" });
     }
+    setSaving(false);
   };
 
   return (

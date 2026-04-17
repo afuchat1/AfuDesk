@@ -1,21 +1,19 @@
-# AfuDesk Replit Migration
+# AfuDesk Replit Setup
 
 ## Overview
-AfuDesk is a Vite React live chat SaaS platform migrated from Lovable to Replit. The app now runs through an Express server on port 5000, serves the React frontend, and exposes API routes backed by Replit PostgreSQL.
+AfuDesk is a Vite React live chat SaaS frontend running on Replit. The backend is Supabase: Supabase Auth, Postgres tables, Realtime, and Edge Functions handle authentication, data, live updates, and notifications.
 
 ## Architecture
 - Frontend: React, TypeScript, Vite, shadcn/ui components in `src/`
-- Backend: Express API in `server/index.ts`
-- Database: Replit PostgreSQL with Drizzle schema in `shared/schema.ts`
-- Widget: Embeddable script in `public/widget.js` using public API endpoints instead of direct database credentials
+- Backend: Supabase project `dzmfdfvundfxyejcunix`
+- Supabase client: `src/integrations/supabase/client.ts` with the public anon key embedded in frontend code
+- Widget: `public/widget.js` talks directly to Supabase REST, Realtime, and Edge Functions
+- Supabase assets: migrations in `supabase/migrations/`, function in `supabase/functions/notify-new-message/`
 
 ## Commands
 - Development: `npm run dev`
-- Database schema sync: `npm run db:push`
 - Production build: `npm run build`
-- Production start: `npm run start`
 
-## Migration Notes
-- Supabase browser access was removed for security; client code now calls server API routes.
-- Authentication is handled by server-issued JWTs stored client-side.
-- `RESEND_API_KEY` is optional and enables email notifications for visitor messages when configured.
+## Notes
+- The app must not depend on Replit secrets or Replit database environment variables.
+- Supabase service secrets, email provider secrets, and database credentials belong in Supabase, not Replit.
