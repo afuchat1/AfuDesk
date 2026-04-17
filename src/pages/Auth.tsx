@@ -1,13 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,7 +16,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshSession } = useAuth();
 
   useEffect(() => {
     if (user) navigate("/dashboard");
@@ -29,24 +28,13 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        navigate("/dashboard");
+        await api.login(email, password);
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { display_name: displayName },
-            emailRedirectTo: window.location.origin,
-          },
-        });
-        if (error) throw error;
-        toast({
-          title: "Account created!",
-          description: "Check your email to confirm your account.",
-        });
+        await api.signup(email, password, displayName);
+        toast({ title: "Account created!" });
       }
+      await refreshSession();
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -136,7 +124,6 @@ export default function Auth() {
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="py-6 text-center text-xs text-muted-foreground">
         © {new Date().getFullYear()} AfuDesk. Managed by afuchatgroup@gmail.com
       </footer>

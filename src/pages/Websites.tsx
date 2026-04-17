@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, Globe, Copy, Trash2, Check, Code, ExternalLink } from "lucide-react";
-import type { Tables } from "@/integrations/supabase/types";
-
-type Website = Tables<"websites">;
+import type { Website } from "@/lib/types";
 
 export default function Websites() {
   const { user } = useAuth();
@@ -32,31 +30,36 @@ export default function Websites() {
 
   const fetchWebsites = async () => {
     if (!user) return;
-    const { data } = await supabase.from("websites").select("*").eq("owner_id", user.id).order("created_at", { ascending: false });
-    setWebsites(data ?? []);
+    const data = await api.getWebsites();
+    setWebsites(data);
     setLoading(false);
   };
 
-  useEffect(() => { fetchWebsites(); }, [user]);
+  useEffect(() => { fetchWebsites().catch(() => setLoading(false)); }, [user]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setCreating(true);
-    const { error } = await supabase.from("websites").insert({ owner_id: user.id, name: name.trim(), domain: domain.trim() });
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await api.createWebsite({ name: name.trim(), domain: domain.trim() });
       toast({ title: "Website added!" });
       setName(""); setDomain(""); setDialogOpen(false); fetchWebsites();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("websites").delete().eq("id", id);
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else { setWebsites((prev) => prev.filter((w) => w.id !== id)); toast({ title: "Website removed" }); }
+    try {
+      await api.deleteWebsite(id);
+      setWebsites((prev) => prev.filter((w) => w.id !== id));
+      toast({ title: "Website removed" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
   };
 
   const getSnippet = (siteId: string) =>
