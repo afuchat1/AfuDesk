@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: "AfuDesk <notifications@afuchat.com>",
         to: [ownerEmail],
-        subject: `💬 New message from ${senderName} on ${siteName}`,
+        subject: `New message from ${senderName} on ${siteName}`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
           <body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f4f5;">
             <div style="max-width:520px;margin:40px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
               <div style="background:linear-gradient(135deg,#00C2CB,#00a5ad);padding:28px 28px;">
-                <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">💬 New Message</h1>
+                <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">New Message</h1>
                 <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;">${senderName} sent a message on <strong>${siteName}</strong></p>
               </div>
               <div style="padding:28px;">

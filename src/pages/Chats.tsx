@@ -372,7 +372,7 @@ export default function Chats() {
           </div>
         ) : (
           <div className="flex-1 flex gap-0 overflow-hidden min-h-0 rounded-xl bg-card">
-            <div className="w-80 shrink-0" style={{ borderRight: "1px solid hsl(225 10% 14%)" }}>{chatListPanel}</div>
+            <div className="w-80 shrink-0" >{chatListPanel}</div>
             <div className="flex-1">{chatMessagesPanel}</div>
           </div>
         )}

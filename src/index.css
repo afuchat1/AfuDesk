@@ -6,50 +6,50 @@
 
 @layer base {
   :root {
-    --background: 225 25% 8%;
-    --foreground: 210 20% 92%;
+    --background: 210 25% 98%;
+    --foreground: 222 47% 11%;
 
-    --card: 225 22% 11%;
-    --card-foreground: 210 20% 92%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 225 22% 11%;
-    --popover-foreground: 210 20% 92%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 24 95% 53%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 225 18% 16%;
-    --secondary-foreground: 210 20% 85%;
+    --secondary: 214 32% 93%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 225 15% 15%;
-    --muted-foreground: 215 12% 55%;
+    --muted: 214 32% 94%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 24 95% 53%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 214 32% 93%;
+    --accent-foreground: 222 47% 11%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 225 10% 18%;
-    --input: 225 15% 18%;
-    --ring: 24 95% 53%;
+    --border: 214 32% 88%;
+    --input: 214 32% 88%;
+    --ring: 221 83% 53%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 225 22% 9%;
-    --sidebar-foreground: 210 20% 70%;
-    --sidebar-primary: 24 95% 53%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 16% 47%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 18% 14%;
-    --sidebar-accent-foreground: 210 20% 92%;
-    --sidebar-border: 225 10% 16%;
-    --sidebar-ring: 24 95% 53%;
+    --sidebar-accent: 214 32% 94%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 88%;
+    --sidebar-ring: 221 83% 53%;
 
-    --success: 142 71% 45%;
+    --success: 142 71% 36%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 92% 45%;
     --warning-foreground: 0 0% 100%;
-    --online: 142 71% 45%;
+    --online: 142 71% 36%;
   }
 }
 
@@ -64,7 +64,7 @@
 }
 
 @layer utilities {
-  .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[hsl(24,95%,53%)] to-[hsl(38,92%,50%)];
+  .text-wrap-balance {
+    text-wrap: balance;
   }
 }

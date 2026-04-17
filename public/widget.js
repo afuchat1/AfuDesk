@@ -400,14 +400,14 @@
     var win = document.createElement('div');
     win.id = 'afu-window';
     win.className = 'afu-animate-in';
-    win.style.cssText = 'display:none;width:380px;max-width:calc(100vw - 24px);height:560px;max-height:calc(100vh - 100px);background:#fff;border-radius:16px;overflow:hidden;flex-direction:column;margin-bottom:14px;box-shadow:0 12px 48px rgba(0,0,0,0.15),0 2px 8px rgba(0,0,0,0.08);';
+    win.style.cssText = 'display:none;width:380px;max-width:calc(100vw - 24px);height:560px;max-height:calc(100vh - 100px);background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;flex-direction:column;margin-bottom:12px;box-shadow:0 8px 24px rgba(15,23,42,0.12);';
 
     // Header
     var header = document.createElement('div');
-    header.style.cssText = 'padding:18px 20px 14px;background:linear-gradient(135deg,' + COLOR + ',' + adjustColor(COLOR, -15) + ');position:relative;';
+    header.style.cssText = 'padding:16px 18px;background:' + COLOR + ';position:relative;';
     header.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;">' +
       '<div style="display:flex;align-items:center;gap:12px;">' +
-      '<div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">' +
+      '<div style="width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;">' +
       '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>' +
       '<div><div style="color:#fff;font-weight:700;font-size:16px;letter-spacing:-0.2px;">' + escapeHtml(siteName) + '</div>' +
       '<div style="display:flex;align-items:center;gap:5px;margin-top:2px;">' +
@@ -449,7 +449,7 @@
       '<p style="color:#999;font-size:13px;margin:0;line-height:1.4;">' + escapeHtml(greeting) + '</p></div>' +
       '<input id="afu-name" placeholder="Your name *" style="' + inputStyle() + '" />' +
       '<input id="afu-email" type="email" placeholder="Email (optional)" style="' + inputStyle() + '" />' +
-      '<button id="afu-start" style="width:100%;padding:12px;background:' + COLOR + ';color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.15s;" onmouseenter="this.style.opacity=\'0.9\'" onmouseleave="this.style.opacity=\'1\'">Start Chat →</button>';
+      '<button id="afu-start" style="width:100%;padding:12px;background:' + COLOR + ';color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.15s;" onmouseenter="this.style.opacity=\'0.9\'" onmouseleave="this.style.opacity=\'1\'">Start chat</button>'; 
 
     var messagesArea = document.createElement('div');
     messagesArea.id = 'afu-messages';
@@ -514,11 +514,11 @@
     // Bubble
     var bubble = document.createElement('button');
     bubble.id = 'afu-bubble';
-    bubble.style.cssText = 'width:60px;height:60px;border-radius:50%;background:' + COLOR + ';border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px ' + COLOR + '40;transition:transform 0.2s,box-shadow 0.2s;float:right;position:relative;';
+    bubble.style.cssText = 'width:56px;height:56px;border-radius:14px;background:' + COLOR + ';border:1px solid rgba(255,255,255,0.25);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(15,23,42,0.14);transition:opacity 0.2s;float:right;position:relative;';
     bubble.innerHTML = '<svg id="afu-bubble-chat" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
       '<svg id="afu-bubble-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-    bubble.onmouseenter = function() { bubble.style.transform = 'scale(1.08)'; bubble.style.boxShadow = '0 6px 28px ' + COLOR + '50'; };
-    bubble.onmouseleave = function() { bubble.style.transform = 'scale(1)'; bubble.style.boxShadow = '0 4px 20px ' + COLOR + '40'; };
+    bubble.onmouseenter = function() { bubble.style.opacity = '0.92'; };
+    bubble.onmouseleave = function() { bubble.style.opacity = '1'; };
 
     var badge = document.createElement('div');
     badge.id = 'afu-badge';
