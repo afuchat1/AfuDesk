@@ -32,6 +32,16 @@
 
   var COLOR = '#00C2CB';
 
+  function colorWithAlpha(hex, alpha) {
+    var clean = (hex || '#00C2CB').replace('#', '');
+    if (clean.length !== 6) return 'rgba(0,194,203,' + alpha + ')';
+    var r = parseInt(clean.slice(0, 2), 16);
+    var g = parseInt(clean.slice(2, 4), 16);
+    var b = parseInt(clean.slice(4, 6), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
+
+
   function supabaseGet(table, query) {
     return fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + query, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' }
@@ -157,27 +167,27 @@
     var container = document.getElementById('afu-messages');
     if (!container) return;
     var wrapper = document.createElement('div');
-    wrapper.style.cssText = 'display:flex;margin-bottom:12px;align-items:flex-end;gap:8px;' + (sender === 'visitor' ? 'flex-direction:row-reverse;' : '');
+    wrapper.style.cssText = 'display:flex;margin-bottom:14px;align-items:flex-end;gap:8px;' + (sender === 'visitor' ? 'flex-direction:row-reverse;' : '');
 
     if (sender === 'agent') {
       var avatar = document.createElement('div');
-      avatar.style.cssText = 'width:28px;height:28px;border-radius:50%;background:' + COLOR + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;color:#fff;font-weight:700;';
+      avatar.style.cssText = 'width:30px;height:30px;border-radius:10px;background:' + colorWithAlpha(COLOR, 0.12) + ';color:' + COLOR + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:800;border:1px solid ' + colorWithAlpha(COLOR, 0.18) + ';';
       avatar.textContent = (websiteConfig && websiteConfig.name) ? websiteConfig.name.charAt(0).toUpperCase() : 'S';
       wrapper.appendChild(avatar);
     }
 
     var bubble = document.createElement('div');
-    bubble.style.cssText = 'max-width:75%;padding:10px 14px;font-size:13.5px;line-height:1.5;word-wrap:break-word;' +
+    bubble.style.cssText = 'max-width:76%;padding:10px 12px;font-size:13.5px;line-height:1.5;word-wrap:break-word;border-radius:12px;border:1px solid ' + (sender === 'visitor' ? COLOR : '#e5e7eb') + ';box-shadow:0 1px 2px rgba(15,23,42,0.04);' +
       (sender === 'visitor'
-        ? 'background:' + COLOR + ';color:#fff;border-radius:18px 18px 4px 18px;'
-        : 'background:#f0f2f5;color:#1a1a2e;border-radius:18px 18px 18px 4px;');
+        ? 'background:' + COLOR + ';color:#fff;'
+        : 'background:#fff;color:#111827;');
     bubble.textContent = text;
     wrapper.appendChild(bubble);
 
     var time = document.createElement('div');
     var now = new Date();
     time.textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-    time.style.cssText = 'font-size:10px;color:#999;flex-shrink:0;';
+    time.style.cssText = 'font-size:10px;color:#94a3b8;flex-shrink:0;margin-bottom:2px;';
     wrapper.appendChild(time);
 
     container.appendChild(wrapper);
@@ -188,49 +198,70 @@
   function loadHelpArticles() {
     var container = document.getElementById('afu-help-content');
     if (!container) return;
-    container.innerHTML = '<div style="padding:24px;text-align:center;color:#999;">Loading...</div>';
+    container.innerHTML = '<div style="padding:28px;text-align:center;color:#64748b;font-size:13px;">Loading help articles...</div>';
     supabaseGet('help_articles', 'website_id=eq.' + SITE_ID + '&is_published=eq.true&order=sort_order.asc&select=id,title,excerpt,category,content')
       .then(function(articles) {
-        if (!articles || articles.length === 0) {
-          container.innerHTML = '<div style="padding:40px 24px;text-align:center;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" style="margin:0 auto 12px;display:block;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p style="color:#999;font-size:13px;">No help articles available yet.</p></div>';
-          return;
+        renderHelpArticles(articles || []);
+        var search = document.getElementById('afu-help-search');
+        if (search) {
+          search.oninput = function() { renderHelpArticles(articles || [], search.value); };
         }
-        var categories = {};
-        articles.forEach(function(a) {
-          var cat = a.category || 'General';
-          if (!categories[cat]) categories[cat] = [];
-          categories[cat].push(a);
-        });
-        var html = '';
-        Object.keys(categories).forEach(function(cat) {
-          html += '<div style="padding:0 16px;margin-bottom:8px;"><p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#999;padding:8px 0;">' + escapeHtml(cat) + '</p>';
-          categories[cat].forEach(function(a) {
-            html += '<div class="afu-help-item" data-id="' + a.id + '" style="padding:12px;margin-bottom:6px;background:#f8f9fa;border-radius:10px;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background=\'#eef0f2\'" onmouseleave="this.style.background=\'#f8f9fa\'">' +
-              '<p style="font-size:14px;font-weight:600;color:#1a1a2e;margin:0 0 4px 0;">' + escapeHtml(a.title) + '</p>' +
-              (a.excerpt ? '<p style="font-size:12px;color:#777;margin:0;line-height:1.4;">' + escapeHtml(a.excerpt) + '</p>' : '') +
-              '</div>';
-          });
-          html += '</div>';
-        });
-        container.innerHTML = html;
-        container.querySelectorAll('.afu-help-item').forEach(function(el) {
-          el.addEventListener('click', function() {
-            var id = this.getAttribute('data-id');
-            var article = articles.find(function(a) { return a.id === id; });
-            if (article) showArticleDetail(article);
-          });
-        });
+      })
+      .catch(function() {
+        container.innerHTML = '<div style="padding:40px 24px;text-align:center;color:#991b1b;font-size:13px;">Help articles could not be loaded.</div>';
       });
+  }
+
+  function renderHelpArticles(articles, term) {
+    var container = document.getElementById('afu-help-content');
+    if (!container) return;
+    term = (term || '').toLowerCase();
+    if (!articles || articles.length === 0) {
+      container.innerHTML = '<div style="padding:42px 24px;text-align:center;"><div style="width:52px;height:52px;border-radius:14px;background:#f8fafc;border:1px solid #e5e7eb;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><p style="color:#111827;font-size:14px;font-weight:700;margin-bottom:4px;">No articles yet</p><p style="color:#64748b;font-size:12.5px;line-height:1.5;">Published help articles will appear here.</p></div>';
+      return;
+    }
+    var filtered = articles.filter(function(a) {
+      return !term || (a.title || '').toLowerCase().indexOf(term) !== -1 || (a.excerpt || '').toLowerCase().indexOf(term) !== -1 || (a.category || '').toLowerCase().indexOf(term) !== -1;
+    });
+    if (filtered.length === 0) {
+      container.innerHTML = '<div style="padding:42px 24px;text-align:center;color:#64748b;font-size:13px;">No articles match your search.</div>';
+      return;
+    }
+    var categories = {};
+    filtered.forEach(function(a) {
+      var cat = a.category || 'General';
+      if (!categories[cat]) categories[cat] = [];
+      categories[cat].push(a);
+    });
+    var html = '<div style="padding:14px 14px 18px;">';
+    Object.keys(categories).forEach(function(cat) {
+      html += '<p style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;margin:10px 2px 8px;">' + escapeHtml(cat) + '</p>';
+      categories[cat].forEach(function(a) {
+        html += '<button class="afu-help-item" data-id="' + a.id + '" style="width:100%;text-align:left;padding:13px 14px;margin-bottom:8px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;cursor:pointer;transition:background 0.15s,border-color 0.15s;box-shadow:0 1px 2px rgba(15,23,42,0.03);">' +
+          '<p style="font-size:14px;font-weight:700;color:#111827;margin:0 0 4px 0;">' + escapeHtml(a.title) + '</p>' +
+          (a.excerpt ? '<p style="font-size:12.5px;color:#64748b;margin:0;line-height:1.45;">' + escapeHtml(a.excerpt) + '</p>' : '') +
+          '</button>';
+      });
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    container.querySelectorAll('.afu-help-item').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var id = this.getAttribute('data-id');
+        var article = filtered.find(function(a) { return String(a.id) === String(id); });
+        if (article) showArticleDetail(article);
+      });
+    });
   }
 
   function showArticleDetail(article) {
     var container = document.getElementById('afu-help-content');
     if (!container) return;
-    container.innerHTML = '<div style="padding:16px;">' +
-      '<button id="afu-help-back" style="background:none;border:none;cursor:pointer;color:' + COLOR + ';font-size:13px;font-weight:600;padding:0;margin-bottom:12px;display:flex;align-items:center;gap:4px;">' +
+    container.innerHTML = '<div style="padding:18px;">' +
+      '<button id="afu-help-back" style="background:#fff;border:1px solid #e5e7eb;cursor:pointer;color:#334155;font-size:13px;font-weight:700;padding:8px 10px;margin-bottom:14px;display:flex;align-items:center;gap:4px;border-radius:8px;">' +
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>' +
-      '<h3 style="font-size:17px;font-weight:700;color:#1a1a2e;margin:0 0 12px 0;">' + escapeHtml(article.title) + '</h3>' +
-      '<div style="font-size:13.5px;color:#444;line-height:1.7;">' + (article.content || '<p style="color:#999;">No content available.</p>') + '</div>' +
+      '<h3 style="font-size:18px;font-weight:800;color:#111827;margin:0 0 12px 0;line-height:1.3;">' + escapeHtml(article.title) + '</h3>' +
+      '<div style="font-size:13.5px;color:#334155;line-height:1.75;">' + (article.content || '<p style="color:#64748b;">No content available.</p>') + '</div>' +
       '</div>';
     document.getElementById('afu-help-back').addEventListener('click', function() { loadHelpArticles(); });
   }
@@ -239,25 +270,30 @@
   function loadTickets() {
     var container = document.getElementById('afu-tickets-content');
     if (!container) return;
-    container.innerHTML = '<div style="padding:16px;">' +
-      '<div style="margin-bottom:16px;">' +
-      '<h3 style="font-size:15px;font-weight:700;color:#1a1a2e;margin:0 0 4px 0;">Submit a Ticket</h3>' +
-      '<p style="font-size:12px;color:#999;margin:0;">We\'ll get back to you via email</p></div>' +
-      '<input id="afu-ticket-name" placeholder="Your name *" style="' + inputStyle() + '" />' +
-      '<input id="afu-ticket-email" type="email" placeholder="Email address *" style="' + inputStyle() + '" />' +
-      '<input id="afu-ticket-subject" placeholder="Subject *" style="' + inputStyle() + '" />' +
-      '<select id="afu-ticket-priority" style="' + inputStyle() + 'color:#666;appearance:none;-webkit-appearance:none;">' +
-      '<option value="low">Low Priority</option><option value="medium" selected>Medium Priority</option><option value="high">High Priority</option><option value="urgent">Urgent</option></select>' +
-      '<textarea id="afu-ticket-desc" placeholder="Describe your issue... *" rows="4" style="' + inputStyle() + 'resize:none;min-height:80px;"></textarea>' +
-      '<button id="afu-ticket-submit" style="width:100%;padding:11px;background:' + COLOR + ';color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.15s;" onmouseenter="this.style.opacity=\'0.9\'" onmouseleave="this.style.opacity=\'1\'">Submit Ticket</button>' +
-      '<div id="afu-ticket-status" style="margin-top:10px;font-size:13px;text-align:center;"></div>' +
+    container.innerHTML = '<div style="padding:18px;">' +
+      '<div style="padding:14px;border:1px solid #e5e7eb;background:#fff;border-radius:12px;margin-bottom:14px;">' +
+      '<h3 style="font-size:16px;font-weight:800;color:#111827;margin:0 0 4px 0;">Submit a support ticket</h3>' +
+      '<p style="font-size:12.5px;color:#64748b;margin:0;line-height:1.5;">Send details now and the team can follow up by email.</p></div>' +
+      '<label style="display:block;font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 6px 2px;">Name</label>' +
+      '<input id="afu-ticket-name" placeholder="Your name" style="' + inputStyle() + '" />' +
+      '<label style="display:block;font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 6px 2px;">Email</label>' +
+      '<input id="afu-ticket-email" type="email" placeholder="you@example.com" style="' + inputStyle() + '" />' +
+      '<label style="display:block;font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 6px 2px;">Subject</label>' +
+      '<input id="afu-ticket-subject" placeholder="What can we help with?" style="' + inputStyle() + '" />' +
+      '<label style="display:block;font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 6px 2px;">Priority</label>' +
+      '<select id="afu-ticket-priority" style="' + inputStyle() + 'color:#334155;appearance:none;-webkit-appearance:none;">' +
+      '<option value="low">Low priority</option><option value="medium" selected>Medium priority</option><option value="high">High priority</option><option value="urgent">Urgent</option></select>' +
+      '<label style="display:block;font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 6px 2px;">Details</label>' +
+      '<textarea id="afu-ticket-desc" placeholder="Describe your request..." rows="4" style="' + inputStyle() + 'resize:none;min-height:92px;"></textarea>' +
+      '<button id="afu-ticket-submit" style="width:100%;padding:12px;background:' + COLOR + ';color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity 0.15s;">Submit ticket</button>' +
+      '<div id="afu-ticket-status" style="margin-top:10px;font-size:13px;text-align:center;line-height:1.5;"></div>' +
       '</div>';
 
     document.getElementById('afu-ticket-submit').addEventListener('click', submitTicket);
   }
 
   function inputStyle() {
-    return 'width:100%;padding:10px 14px;margin-bottom:10px;background:#f8f9fa;color:#1a1a2e;border:1.5px solid #e8eaed;border-radius:10px;font-size:13.5px;outline:none;box-sizing:border-box;font-family:inherit;transition:border-color 0.15s;';
+    return 'width:100%;padding:11px 12px;margin-bottom:12px;background:#fff;color:#111827;border:1px solid #dbe3ee;border-radius:10px;font-size:13.5px;outline:none;box-sizing:border-box;font-family:inherit;transition:border-color 0.15s,box-shadow 0.15s;';
   }
 
   function submitTicket() {
@@ -288,7 +324,7 @@
       status: 'open'
     }).then(function(data) {
       if (data && data.length > 0) {
-        status.innerHTML = '<span style="color:#22c55e;">✓ Ticket submitted successfully! We\'ll respond via email.</span>';
+        status.innerHTML = '<span style="color:#15803d;font-weight:700;">Ticket submitted. We\'ll respond by email.</span>'; 
         document.getElementById('afu-ticket-name').value = '';
         document.getElementById('afu-ticket-email').value = '';
         document.getElementById('afu-ticket-subject').value = '';
@@ -297,12 +333,12 @@
         status.innerHTML = '<span style="color:#e53e3e;">Failed to submit. Please try again.</span>';
       }
       btn.disabled = false;
-      btn.textContent = 'Submit Ticket';
+      btn.textContent = 'Submit ticket';
       btn.style.opacity = '1';
     }).catch(function() {
       status.innerHTML = '<span style="color:#e53e3e;">Network error. Please try again.</span>';
       btn.disabled = false;
-      btn.textContent = 'Submit Ticket';
+      btn.textContent = 'Submit ticket';
       btn.style.opacity = '1';
     });
   }
@@ -311,34 +347,38 @@
   function loadUpdates() {
     var container = document.getElementById('afu-updates-content');
     if (!container) return;
-    container.innerHTML = '<div style="padding:24px;text-align:center;color:#999;">Loading...</div>';
+    container.innerHTML = '<div style="padding:28px;text-align:center;color:#64748b;font-size:13px;">Loading updates...</div>';
     supabaseGet('support_updates', 'website_id=eq.' + SITE_ID + '&is_published=eq.true&order=published_at.desc&select=id,title,summary,label,published_at,content')
       .then(function(updates) {
         if (!updates || updates.length === 0) {
-          container.innerHTML = '<div style="padding:40px 24px;text-align:center;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" style="margin:0 auto 12px;display:block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p style="color:#999;font-size:13px;">No updates posted yet.</p></div>';
+          container.innerHTML = '<div style="padding:42px 24px;text-align:center;"><div style="width:52px;height:52px;border-radius:14px;background:#f8fafc;border:1px solid #e5e7eb;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><p style="color:#111827;font-size:14px;font-weight:700;margin-bottom:4px;">No updates posted</p><p style="color:#64748b;font-size:12.5px;line-height:1.5;">Product news and announcements will appear here.</p></div>';
           return;
         }
-        var html = '';
+        var html = '<div style="padding:14px;">';
         updates.forEach(function(u) {
           var date = new Date(u.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-          var labelColors = { improvement: '#3b82f6', fix: '#22c55e', feature: '#8b5cf6', announcement: '#f59e0b' };
-          var labelColor = labelColors[(u.label || '').toLowerCase()] || '#999';
-          html += '<div class="afu-update-item" data-id="' + u.id + '" style="padding:14px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background=\'#f8f9fa\'" onmouseleave="this.style.background=\'transparent\'">' +
-            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
-            (u.label ? '<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#fff;background:' + labelColor + ';padding:2px 8px;border-radius:4px;">' + escapeHtml(u.label) + '</span>' : '') +
-            '<span style="font-size:11px;color:#999;">' + date + '</span></div>' +
-            '<p style="font-size:14px;font-weight:600;color:#1a1a2e;margin:0 0 4px 0;">' + escapeHtml(u.title) + '</p>' +
-            (u.summary ? '<p style="font-size:12px;color:#777;margin:0;line-height:1.4;">' + escapeHtml(u.summary) + '</p>' : '') +
-            '</div>';
+          var labelColors = { improvement: '#2563eb', fix: '#15803d', feature: '#7c3aed', announcement: '#b45309' };
+          var labelColor = labelColors[(u.label || '').toLowerCase()] || '#475569';
+          html += '<button class="afu-update-item" data-id="' + u.id + '" style="width:100%;text-align:left;padding:14px;margin-bottom:10px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;cursor:pointer;transition:background 0.15s,border-color 0.15s;box-shadow:0 1px 2px rgba(15,23,42,0.03);">' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+            (u.label ? '<span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:' + labelColor + ';background:#f8fafc;border:1px solid #e5e7eb;padding:3px 7px;border-radius:999px;">' + escapeHtml(u.label) + '</span>' : '') +
+            '<span style="font-size:11px;color:#64748b;">' + date + '</span></div>' +
+            '<p style="font-size:14px;font-weight:800;color:#111827;margin:0 0 5px 0;">' + escapeHtml(u.title) + '</p>' +
+            (u.summary ? '<p style="font-size:12.5px;color:#64748b;margin:0;line-height:1.45;">' + escapeHtml(u.summary) + '</p>' : '') +
+            '</button>';
         });
+        html += '</div>';
         container.innerHTML = html;
         container.querySelectorAll('.afu-update-item').forEach(function(el) {
           el.addEventListener('click', function() {
             var id = this.getAttribute('data-id');
-            var update = updates.find(function(u) { return u.id === id; });
+            var update = updates.find(function(u) { return String(u.id) === String(id); });
             if (update) showUpdateDetail(update);
           });
         });
+      })
+      .catch(function() {
+        container.innerHTML = '<div style="padding:40px 24px;text-align:center;color:#991b1b;font-size:13px;">Updates could not be loaded.</div>';
       });
   }
 
@@ -346,12 +386,12 @@
     var container = document.getElementById('afu-updates-content');
     if (!container) return;
     var date = new Date(update.published_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    container.innerHTML = '<div style="padding:16px;">' +
-      '<button id="afu-update-back" style="background:none;border:none;cursor:pointer;color:' + COLOR + ';font-size:13px;font-weight:600;padding:0;margin-bottom:12px;display:flex;align-items:center;gap:4px;">' +
+    container.innerHTML = '<div style="padding:18px;">' +
+      '<button id="afu-update-back" style="background:#fff;border:1px solid #e5e7eb;cursor:pointer;color:#334155;font-size:13px;font-weight:700;padding:8px 10px;margin-bottom:14px;display:flex;align-items:center;gap:4px;border-radius:8px;">' +
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>' +
-      '<p style="font-size:12px;color:#999;margin:0 0 8px 0;">' + date + '</p>' +
-      '<h3 style="font-size:17px;font-weight:700;color:#1a1a2e;margin:0 0 12px 0;">' + escapeHtml(update.title) + '</h3>' +
-      '<div style="font-size:13.5px;color:#444;line-height:1.7;">' + (update.content || '<p style="color:#999;">No details available.</p>') + '</div>' +
+      '<p style="font-size:12px;color:#64748b;margin:0 0 8px 0;">' + date + '</p>' +
+      '<h3 style="font-size:18px;font-weight:800;color:#111827;margin:0 0 12px 0;line-height:1.3;">' + escapeHtml(update.title) + '</h3>' +
+      '<div style="font-size:13.5px;color:#334155;line-height:1.75;">' + (update.content || '<p style="color:#64748b;">No details available.</p>') + '</div>' +
       '</div>';
     document.getElementById('afu-update-back').addEventListener('click', function() { loadUpdates(); });
   }
@@ -365,8 +405,10 @@
       var btn = document.getElementById('afu-tab-' + t);
       if (panel) panel.style.display = t === tab ? 'flex' : 'none';
       if (btn) {
-        btn.style.color = t === tab ? COLOR : '#999';
-        btn.style.borderBottom = t === tab ? '2px solid ' + COLOR : '2px solid transparent';
+        btn.style.color = t === tab ? COLOR : '#64748b';
+        btn.style.background = t === tab ? '#fff' : 'transparent';
+        btn.style.boxShadow = t === tab ? '0 1px 2px rgba(15,23,42,0.08)' : 'none';
+        btn.style.borderColor = t === tab ? '#e5e7eb' : 'transparent';
       }
     });
     if (tab === 'help') loadHelpArticles();
@@ -384,12 +426,14 @@
 
     // Inject styles
     var style = document.createElement('style');
-    style.textContent = '#afu-root *{box-sizing:border-box;margin:0;padding:0;}' +
-      '#afu-root input:focus,#afu-root textarea:focus{border-color:' + COLOR + ' !important;outline:none;}' +
-      '#afu-root ::-webkit-scrollbar{width:5px;}#afu-root ::-webkit-scrollbar-track{background:transparent;}#afu-root ::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px;}' +
-      '@keyframes afuSlideUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}' +
-      '@keyframes afuPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}' +
-      '.afu-animate-in{animation:afuSlideUp 0.3s ease-out;}';
+    style.textContent = '#afu-root *{box-sizing:border-box;margin:0;padding:0;line-height:normal;}' +
+      '#afu-root{font-synthesis-weight:none;-webkit-font-smoothing:antialiased;}' +
+      '#afu-root input:focus,#afu-root textarea:focus,#afu-root select:focus{border-color:' + COLOR + ' !important;box-shadow:0 0 0 3px ' + colorWithAlpha(COLOR, 0.12) + ' !important;outline:none;}' +
+      '#afu-root button{font-family:inherit;}' +
+      '#afu-root ::-webkit-scrollbar{width:6px;}#afu-root ::-webkit-scrollbar-track{background:transparent;}#afu-root ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px;}' +
+      '@keyframes afuSlideUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}' +
+      '.afu-animate-in{animation:afuSlideUp 0.22s ease-out;}' +
+      '@media(max-width:480px){#afu-root{right:12px!important;bottom:12px!important;}#afu-window{width:calc(100vw - 24px)!important;height:calc(100vh - 92px)!important;}}';
     document.head.appendChild(style);
 
     var root = document.createElement('div');
@@ -400,25 +444,26 @@
     var win = document.createElement('div');
     win.id = 'afu-window';
     win.className = 'afu-animate-in';
-    win.style.cssText = 'display:none;width:380px;max-width:calc(100vw - 24px);height:560px;max-height:calc(100vh - 100px);background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;flex-direction:column;margin-bottom:12px;box-shadow:0 8px 24px rgba(15,23,42,0.12);';
+    win.style.cssText = 'display:none;width:410px;max-width:calc(100vw - 24px);height:640px;max-height:calc(100vh - 100px);background:#f8fafc;border:1px solid #dbe3ee;border-radius:18px;overflow:hidden;flex-direction:column;margin-bottom:14px;box-shadow:0 18px 48px rgba(15,23,42,0.16),0 4px 12px rgba(15,23,42,0.08);';
 
     // Header
     var header = document.createElement('div');
-    header.style.cssText = 'padding:16px 18px;background:' + COLOR + ';position:relative;';
-    header.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;">' +
-      '<div style="display:flex;align-items:center;gap:12px;">' +
-      '<div style="width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;">' +
-      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>' +
-      '<div><div style="color:#fff;font-weight:700;font-size:16px;letter-spacing:-0.2px;">' + escapeHtml(siteName) + '</div>' +
-      '<div style="display:flex;align-items:center;gap:5px;margin-top:2px;">' +
-      '<div style="width:7px;height:7px;border-radius:50%;background:' + (isOnline ? '#4ade80' : '#999') + ';"></div>' +
-      '<span style="color:rgba(255,255,255,0.85);font-size:12px;">' + (isOnline ? 'Online now' : 'Away') + '</span></div></div></div>' +
-      '<button id="afu-close" style="background:rgba(255,255,255,0.15);border:none;cursor:pointer;padding:6px;border-radius:8px;transition:background 0.15s;" onmouseenter="this.style.background=\'rgba(255,255,255,0.25)\'" onmouseleave="this.style.background=\'rgba(255,255,255,0.15)\'">' +
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
+    header.style.cssText = 'padding:18px;background:#fff;border-bottom:1px solid #e5e7eb;position:relative;';
+    header.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">' +
+      '<div style="display:flex;align-items:center;gap:12px;min-width:0;">' +
+      '<div style="width:40px;height:40px;background:' + colorWithAlpha(COLOR, 0.12) + ';border:1px solid ' + colorWithAlpha(COLOR, 0.2) + ';border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + COLOR + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>' +
+      '<div style="min-width:0;"><div style="color:#111827;font-weight:800;font-size:15px;letter-spacing:-0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(siteName) + '</div>' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;">' +
+      '<div style="width:7px;height:7px;border-radius:50%;background:' + (isOnline ? '#16a34a' : '#94a3b8') + ';box-shadow:0 0 0 3px ' + (isOnline ? 'rgba(22,163,74,0.12)' : 'rgba(148,163,184,0.14)') + ';"></div>' +
+      '<span style="color:#64748b;font-size:12px;font-weight:600;">' + (isOnline ? 'Online · replies in minutes' : 'Away · leave a message') + '</span></div></div></div>' +
+      '<button id="afu-close" aria-label="Close chat" style="background:#f8fafc;border:1px solid #e5e7eb;cursor:pointer;padding:7px;border-radius:9px;color:#475569;transition:background 0.15s,border-color 0.15s;">' +
+      '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>' +
+      '<div style="margin-top:14px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;color:#475569;font-size:12.5px;line-height:1.45;">' + escapeHtml(greeting) + '</div>';
 
     // Tab bar
     var tabBar = document.createElement('div');
-    tabBar.style.cssText = 'display:flex;background:#fff;border-bottom:1px solid #f0f0f0;';
+    tabBar.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#fff;border-bottom:1px solid #e5e7eb;padding:8px;';
     var tabDefs = [
       { id: 'chat', label: 'Chat', icon: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>' },
       { id: 'help', label: 'Help', icon: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>' },
@@ -428,7 +473,7 @@
     tabDefs.forEach(function(t) {
       var btn = document.createElement('button');
       btn.id = 'afu-tab-' + t.id;
-      btn.style.cssText = 'flex:1;padding:10px 0 8px;background:none;border:none;border-bottom:2px solid ' + (t.id === 'chat' ? COLOR : 'transparent') + ';cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:' + (t.id === 'chat' ? COLOR : '#999') + ';font-size:10px;font-weight:600;transition:color 0.15s,border-color 0.15s;';
+      btn.style.cssText = 'padding:9px 4px;background:' + (t.id === 'chat' ? '#fff' : 'transparent') + ';border:1px solid ' + (t.id === 'chat' ? '#e5e7eb' : 'transparent') + ';border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;color:' + (t.id === 'chat' ? COLOR : '#64748b') + ';font-size:10.5px;font-weight:800;transition:color 0.15s,background 0.15s,border-color 0.15s,box-shadow 0.15s;box-shadow:' + (t.id === 'chat' ? '0 1px 2px rgba(15,23,42,0.08)' : 'none') + ';';
       btn.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + t.icon + '</svg>' + t.label;
       btn.addEventListener('click', function() { switchTab(t.id); });
       tabBar.appendChild(btn);
@@ -441,26 +486,30 @@
 
     var prechat = document.createElement('div');
     prechat.id = 'afu-prechat';
-    prechat.style.cssText = 'padding:24px 20px;flex:1;display:flex;flex-direction:column;justify-content:center;';
-    prechat.innerHTML = '<div style="text-align:center;margin-bottom:20px;">' +
-      '<div style="width:56px;height:56px;background:' + COLOR + '15;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">' +
-      '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="' + COLOR + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>' +
-      '<h3 style="font-size:16px;font-weight:700;color:#1a1a2e;margin:0 0 6px 0;">Start a conversation</h3>' +
-      '<p style="color:#999;font-size:13px;margin:0;line-height:1.4;">' + escapeHtml(greeting) + '</p></div>' +
-      '<input id="afu-name" placeholder="Your name *" style="' + inputStyle() + '" />' +
-      '<input id="afu-email" type="email" placeholder="Email (optional)" style="' + inputStyle() + '" />' +
-      '<button id="afu-start" style="width:100%;padding:12px;background:' + COLOR + ';color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.15s;" onmouseenter="this.style.opacity=\'0.9\'" onmouseleave="this.style.opacity=\'1\'">Start chat</button>'; 
+    prechat.style.cssText = 'padding:18px;flex:1;display:flex;flex-direction:column;justify-content:center;background:#f8fafc;';
+    prechat.innerHTML = '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(15,23,42,0.03);">' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">' +
+      '<div style="width:44px;height:44px;background:' + colorWithAlpha(COLOR, 0.12) + ';border:1px solid ' + colorWithAlpha(COLOR, 0.2) + ';border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + COLOR + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>' +
+      '<div><h3 style="font-size:17px;font-weight:800;color:#111827;margin:0 0 4px 0;letter-spacing:-0.2px;">Start a conversation</h3>' +
+      '<p style="color:#64748b;font-size:12.5px;margin:0;line-height:1.45;">Tell us who you are so the team can follow up.</p></div></div>' +
+      '<label style="display:block;font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 6px 2px;">Name</label>' +
+      '<input id="afu-name" placeholder="Your name" style="' + inputStyle() + '" />' +
+      '<label style="display:block;font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 6px 2px;">Email optional</label>' +
+      '<input id="afu-email" type="email" placeholder="you@example.com" style="' + inputStyle() + '" />' +
+      '<button id="afu-start" style="width:100%;padding:12px;background:' + COLOR + ';color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity 0.15s;">Start chat</button>' +
+      '</div>';
 
     var messagesArea = document.createElement('div');
     messagesArea.id = 'afu-messages';
-    messagesArea.style.cssText = 'flex:1;overflow-y:auto;padding:16px;display:none;background:#fff;';
+    messagesArea.style.cssText = 'flex:1;overflow-y:auto;padding:16px;display:none;background:#f8fafc;';
 
     var inputArea = document.createElement('div');
     inputArea.id = 'afu-input-area';
-    inputArea.style.cssText = 'display:none;padding:12px 16px;background:#fff;border-top:1px solid #f0f0f0;';
+    inputArea.style.cssText = 'display:none;padding:12px 14px;background:#fff;border-top:1px solid #e5e7eb;';
     inputArea.innerHTML = '<form id="afu-form" style="display:flex;gap:8px;align-items:center;">' +
-      '<input id="afu-input" type="text" placeholder="Type your message..." autocomplete="off" style="flex:1;padding:10px 14px;background:#f8f9fa;color:#1a1a2e;border:1.5px solid #e8eaed;border-radius:24px;font-size:13.5px;outline:none;font-family:inherit;transition:border-color 0.15s;" />' +
-      '<button type="submit" style="width:38px;height:38px;background:' + COLOR + ';border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity 0.15s;flex-shrink:0;" onmouseenter="this.style.opacity=\'0.9\'" onmouseleave="this.style.opacity=\'1\'">' +
+      '<input id="afu-input" type="text" placeholder="Type your message..." autocomplete="off" style="flex:1;padding:11px 12px;background:#fff;color:#111827;border:1px solid #dbe3ee;border-radius:10px;font-size:13.5px;outline:none;font-family:inherit;transition:border-color 0.15s,box-shadow 0.15s;" />' +
+      '<button type="submit" aria-label="Send message" style="width:40px;height:40px;background:' + COLOR + ';border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity 0.15s;flex-shrink:0;" onmouseenter="this.style.opacity=\'0.92\'" onmouseleave="this.style.opacity=\'1\'">' +
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></form>';
 
     chatPanel.appendChild(prechat);
@@ -472,19 +521,19 @@
     helpPanel.id = 'afu-panel-help';
     helpPanel.style.cssText = 'display:none;flex-direction:column;flex:1;min-height:0;';
     var helpSearch = document.createElement('div');
-    helpSearch.style.cssText = 'padding:12px 16px;border-bottom:1px solid #f0f0f0;';
+    helpSearch.style.cssText = 'padding:12px 14px;border-bottom:1px solid #e5e7eb;background:#fff;';
     helpSearch.innerHTML = '<div style="position:relative;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
-      '<input id="afu-help-search" placeholder="Search help articles..." style="width:100%;padding:10px 14px 10px 38px;background:#f8f9fa;color:#1a1a2e;border:1.5px solid #e8eaed;border-radius:10px;font-size:13.5px;outline:none;font-family:inherit;" /></div>';
+      '<input id="afu-help-search" placeholder="Search help articles..." style="width:100%;padding:11px 12px 11px 38px;background:#fff;color:#111827;border:1px solid #dbe3ee;border-radius:10px;font-size:13.5px;outline:none;font-family:inherit;transition:border-color 0.15s,box-shadow 0.15s;" /></div>'; 
     var helpContent = document.createElement('div');
     helpContent.id = 'afu-help-content';
-    helpContent.style.cssText = 'flex:1;overflow-y:auto;';
+    helpContent.style.cssText = 'flex:1;overflow-y:auto;background:#f8fafc;';
     helpPanel.appendChild(helpSearch);
     helpPanel.appendChild(helpContent);
 
     // ====== TICKETS PANEL ======
     var ticketsPanel = document.createElement('div');
     ticketsPanel.id = 'afu-panel-tickets';
-    ticketsPanel.style.cssText = 'display:none;flex-direction:column;flex:1;min-height:0;overflow-y:auto;';
+    ticketsPanel.style.cssText = 'display:none;flex-direction:column;flex:1;min-height:0;overflow-y:auto;background:#f8fafc;';
     var ticketsContent = document.createElement('div');
     ticketsContent.id = 'afu-tickets-content';
     ticketsPanel.appendChild(ticketsContent);
@@ -492,15 +541,15 @@
     // ====== UPDATES PANEL ======
     var updatesPanel = document.createElement('div');
     updatesPanel.id = 'afu-panel-updates';
-    updatesPanel.style.cssText = 'display:none;flex-direction:column;flex:1;min-height:0;overflow-y:auto;';
+    updatesPanel.style.cssText = 'display:none;flex-direction:column;flex:1;min-height:0;overflow-y:auto;background:#f8fafc;';
     var updatesContent = document.createElement('div');
     updatesContent.id = 'afu-updates-content';
     updatesPanel.appendChild(updatesContent);
 
     // Footer
     var footer = document.createElement('div');
-    footer.style.cssText = 'padding:8px;text-align:center;background:#fafafa;border-top:1px solid #f0f0f0;';
-    footer.innerHTML = '<span style="color:#bbb;font-size:10.5px;">Powered by <a href="https://support.afuchat.com" target="_blank" rel="noopener" style="color:' + COLOR + ';text-decoration:none;font-weight:700;">AfuDesk</a></span>';
+    footer.style.cssText = 'padding:9px;text-align:center;background:#fff;border-top:1px solid #e5e7eb;';
+    footer.innerHTML = '<span style="color:#94a3b8;font-size:11px;font-weight:600;">Powered by <a href="https://support.afuchat.com" target="_blank" rel="noopener" style="color:' + COLOR + ';text-decoration:none;font-weight:800;">AfuDesk</a></span>'; 
 
     // Assemble window
     win.appendChild(header);
@@ -514,7 +563,7 @@
     // Bubble
     var bubble = document.createElement('button');
     bubble.id = 'afu-bubble';
-    bubble.style.cssText = 'width:56px;height:56px;border-radius:14px;background:' + COLOR + ';border:1px solid rgba(255,255,255,0.25);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(15,23,42,0.14);transition:opacity 0.2s;float:right;position:relative;';
+    bubble.style.cssText = 'width:60px;height:60px;border-radius:18px;background:' + COLOR + ';border:1px solid rgba(255,255,255,0.28);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 32px rgba(15,23,42,0.18),0 4px 10px rgba(15,23,42,0.08);transition:opacity 0.2s,box-shadow 0.2s;float:right;position:relative;';
     bubble.innerHTML = '<svg id="afu-bubble-chat" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
       '<svg id="afu-bubble-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
     bubble.onmouseenter = function() { bubble.style.opacity = '0.92'; };
@@ -522,7 +571,7 @@
 
     var badge = document.createElement('div');
     badge.id = 'afu-badge';
-    badge.style.cssText = 'display:none;position:absolute;top:-2px;right:-2px;min-width:20px;height:20px;background:#ef4444;color:#fff;border-radius:10px;font-size:11px;font-weight:700;align-items:center;justify-content:center;padding:0 5px;border:2px solid #fff;';
+    badge.style.cssText = 'display:none;position:absolute;top:-3px;right:-3px;min-width:21px;height:21px;background:#dc2626;color:#fff;border-radius:999px;font-size:11px;font-weight:800;align-items:center;justify-content:center;padding:0 6px;border:2px solid #fff;';
     bubble.appendChild(badge);
 
     root.appendChild(win);

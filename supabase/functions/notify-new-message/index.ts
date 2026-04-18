@@ -89,21 +89,21 @@ Deno.serve(async (req) => {
           <!DOCTYPE html>
           <html>
           <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-          <body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f4f5;">
-            <div style="max-width:520px;margin:40px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-              <div style="background:linear-gradient(135deg,#00C2CB,#00a5ad);padding:28px 28px;">
-                <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">New Message</h1>
-                <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;">${senderName} sent a message on <strong>${siteName}</strong></p>
+          <body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;">
+            <div style="max-width:520px;margin:40px auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+              <div style="background:#fff;border-bottom:1px solid #e5e7eb;padding:28px 28px;">
+                <h1 style="margin:0;color:#111827;font-size:20px;font-weight:700;">New message</h1>
+                <p style="margin:8px 0 0;color:#64748b;font-size:14px;">${senderName} sent a message on <strong style="color:#111827;">${siteName}</strong></p>
               </div>
               <div style="padding:28px;">
-                <div style="background:#f0fffe;border-left:4px solid #00C2CB;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
-                  <p style="margin:0;font-size:15px;color:#1a1a1a;line-height:1.6;">${message_content}</p>
+                <div style="background:#f8fafc;border:1px solid #dbe3ee;border-radius:10px;padding:16px 18px;margin-bottom:24px;">
+                  <p style="margin:0;font-size:15px;color:#111827;line-height:1.6;">${message_content}</p>
                 </div>
-                ${chat.visitor_email ? `<p style="font-size:13px;color:#666;margin:0 0 16px;">📧 <a href="mailto:${chat.visitor_email}" style="color:#00C2CB;text-decoration:none;">${chat.visitor_email}</a></p>` : ""}
-                <a href="https://support.afuchat.com/dashboard/chats" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#00C2CB,#00a5ad);color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;">Reply in Dashboard →</a>
+                ${chat.visitor_email ? `<p style="font-size:13px;color:#64748b;margin:0 0 16px;">Visitor email: <a href="mailto:${chat.visitor_email}" style="color:#00C2CB;text-decoration:none;font-weight:600;">${chat.visitor_email}</a></p>` : ""}
+                <a href="https://support.afuchat.com/dashboard/chats" style="display:inline-block;padding:12px 24px;background:#00C2CB;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;">Reply in dashboard</a>
               </div>
-              <div style="padding:16px 28px;border-top:1px solid #f0f0f0;text-align:center;">
-                <p style="margin:0;font-size:11px;color:#bbb;">Sent by <a href="https://support.afuchat.com" style="color:#00C2CB;text-decoration:none;">AfuDesk</a> • support.afuchat.com</p>
+              <div style="padding:16px 28px;border-top:1px solid #e5e7eb;text-align:center;">
+                <p style="margin:0;font-size:11px;color:#94a3b8;">Sent by <a href="https://support.afuchat.com" style="color:#00C2CB;text-decoration:none;font-weight:700;">AfuDesk</a> • support.afuchat.com</p>
               </div>
             </div>
           </body>
