@@ -90,19 +90,19 @@ Deno.serve(async (req) => {
           <html>
           <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
           <body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;">
-            <div style="max-width:520px;margin:40px auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
-              <div style="background:#fff;border-bottom:1px solid #e5e7eb;padding:28px 28px;">
+            <div style="max-width:520px;margin:40px auto;background:#fff;border-radius:12px;overflow:hidden;">
+              <div style="background:#fff;padding:28px 28px;">
                 <h1 style="margin:0;color:#111827;font-size:20px;font-weight:700;">New message</h1>
                 <p style="margin:8px 0 0;color:#64748b;font-size:14px;">${senderName} sent a message on <strong style="color:#111827;">${siteName}</strong></p>
               </div>
               <div style="padding:28px;">
-                <div style="background:#f8fafc;border:1px solid #dbe3ee;border-radius:10px;padding:16px 18px;margin-bottom:24px;">
+                <div style="background:#f8fafc;border-radius:10px;padding:16px 18px;margin-bottom:24px;">
                   <p style="margin:0;font-size:15px;color:#111827;line-height:1.6;">${message_content}</p>
                 </div>
                 ${chat.visitor_email ? `<p style="font-size:13px;color:#64748b;margin:0 0 16px;">Visitor email: <a href="mailto:${chat.visitor_email}" style="color:#00C2CB;text-decoration:none;font-weight:600;">${chat.visitor_email}</a></p>` : ""}
                 <a href="https://support.afuchat.com/dashboard/chats" style="display:inline-block;padding:12px 24px;background:#00C2CB;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;">Reply in dashboard</a>
               </div>
-              <div style="padding:16px 28px;border-top:1px solid #e5e7eb;text-align:center;">
+              <div style="padding:16px 28px;text-align:center;">
                 <p style="margin:0;font-size:11px;color:#94a3b8;">Sent by <a href="https://support.afuchat.com" style="color:#00C2CB;text-decoration:none;font-weight:700;">AfuDesk</a> • support.afuchat.com</p>
               </div>
             </div>

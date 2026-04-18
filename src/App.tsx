@@ -12,6 +12,7 @@ import Websites from "./pages/Websites";
 import Chats from "./pages/Chats";
 import DashboardSettings from "./pages/DashboardSettings";
 import Demo from "./pages/Demo";
+import PublicPage from "./pages/PublicPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,13 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/demo" element={<Demo />} />
+            <Route path="/features" element={<PublicPage />} />
+            <Route path="/pricing" element={<PublicPage />} />
+            <Route path="/docs" element={<PublicPage />} />
+            <Route path="/security" element={<PublicPage />} />
+            <Route path="/customers" element={<PublicPage />} />
+            <Route path="/changelog" element={<PublicPage />} />
+            <Route path="/contact" element={<PublicPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route
               path="/dashboard"

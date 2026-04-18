@@ -11,9 +11,9 @@ AfuDesk is a Vite React live chat SaaS frontend running on Replit. The backend i
 - Supabase assets: migrations in `supabase/migrations/`, function in `supabase/functions/notify-new-message/`
 
 ## Design Direction
-- Professional flat SaaS interface using a light neutral theme, subtle borders, small radii, and minimal shadow.
-- Landing page presents a realistic support inbox preview instead of decorative marketing blocks.
-- Demo and dashboard shell use the same flat product styling.
+- Professional borderless SaaS interface using a light neutral theme, soft fills, rounded panels, and subtle shadows.
+- Public marketing site uses a Vercel-inspired top navigation with hover dropdowns and a complete multi-column footer.
+- Public routes now include Features, Pricing, Docs, Security, Customers, Changelog, Contact, and Demo.
 - Embedded widget should feel like a complete support center: neutral header, segmented tabs for Chat/Help/Tickets/News, refined forms, clear empty states, responsive sizing, and no gradients or playful effects.
 
 ## Commands
